@@ -1,35 +1,50 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <list>
 using namespace std;
+
+int longestSubsequence(vector<int> &nums)
+{
+    vector<int> v;
+    if (nums[0] > 0)
+    {
+        v.push_back(nums[0]);
+    }
+
+    for (int i = 1; i < nums.size(); i++)
+    {
+        int ans = v[0];
+
+        for (int i = 1; i < v.size(); i++)
+        {
+            int temp = ans;
+            ans = ans & v[i];
+            if (ans == 0)
+            {
+                ans = temp;
+            }
+        }
+        if (nums[i - 1] < nums[i])
+        {
+            v.push_back(nums[i]);
+        }
+    }
+
+    return v.size();
+}
 
 int main()
 {
-    vector<int> nums = {3, 2, 8, 5, 4, 14, 9, 15};
 
-    int n = nums.size();
-
-    for (int i = 0; i < n; i++)
+    int count = 1;
+    for (int i = 1; i <= 5; i++)
     {
-        int x = nums[i];
-        int even = 0;
-        int odd = 0;
-        for (int j = i + 1; j <= n; j++)
-        {
-            x = x ^ nums[j];
-            if (nums[j - 1] % 2 == 0)
-            {
-                even++;
-            }
-            else
-            {
-                odd++;
-            }
-        }
 
-        if (even == odd && x == 0)
-            cout << even * 2 << " ";
+        cout << i << " & " << 1 << " = " << ((i >> 1) & 1) << endl;
     }
+
+    list<int> ll;
 
     return 0;
 }
