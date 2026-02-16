@@ -13,19 +13,17 @@ void printArr(int arr[], int n)
 
 int partition(int arr[], int si, int ei)
 {
-    int i = si - 1;
-    int pivot = arr[ei];
+    int i = 0;
 
-    for (int j = si; j < ei; j++)
+    for (int j = 0; j < ei; j++)
     {
-        if (arr[j] <= pivot)
+        if (arr[j] <= arr[ei])
         {
-            i++;
-            swap(arr[i], arr[j]);
+
+            swap(arr[i++], arr[j]);
         }
     }
 
-    i++;
     swap(arr[i], arr[ei]);
     // pivotIdx = i
     return i;
