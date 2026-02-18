@@ -31,24 +31,6 @@ Node *buildTree(vector<int> &nodes)
     return currNode;
 }
 
-void preorder(Node *root)
-{
-    if (root == nullptr)
-        return;
-    cout << root->data << " ";
-    preorder(root->left);
-    preorder(root->right);
-}
-
-void postorder(Node *root)
-{
-    if (root == nullptr)
-        return;
-    postorder(root->left);
-    postorder(root->right);
-    cout << root->data << " ";
-}
-
 void levelOrder(Node *root)
 {
     if (root == nullptr)
@@ -83,153 +65,186 @@ void levelOrder(Node *root)
     }
 }
 
-pair<int, int> diam2(Node *root)
+void KthHelper(Node *root, int k, int currLevel)
 {
     if (root == nullptr)
     {
-        return make_pair(0, 0);
+        return;
     }
 
-    //(diameter, height)
-    pair<int, int> leftInfo = diam2(root->left);   //(LD, LH)
-    pair<int, int> rightInfo = diam2(root->right); //(RD, RH)
+    if (currLevel == k)
+    {
+        cout << root->data << " ";
+        return;
+    }
 
-    int currDiam = leftInfo.second + rightInfo.second + 1;
-    int finalDiam = max(currDiam, max(leftInfo.first, rightInfo.first));
-    int finalHt = max(leftInfo.second, rightInfo.second) + 1;
-
-    return make_pair(finalDiam, finalHt);
+    KthHelper(root->left, k, currLevel + 1);
+    KthHelper(root->right, k, currLevel + 1);
 }
 
-int height(Node *root)
+void KthLevel(Node *root, int k) // O(n)
 {
-    if (root == nullptr)
-        return 0;
-
-    int leftHt = height(root->left);
-    int rightHt = height(root->right);
-
-    int currHt = max(leftHt, rightHt) + 1;
-    return currHt;
-}
-
-int count(Node *root)
-{
-    if (root == nullptr)
-    {
-        return 0;
-    }
-
-    return count(root->left) + count(root->right) + 1;
-}
-
-int diam1(Node *root)
-{
-    if (root == nullptr)
-        return 0;
-
-    int currDiam = height(root->left) + height(root->right) + 1;
-    int leftDiam = diam1(root->left);
-    int rightDiam = diam1(root->right);
-
-    return max(currDiam, max(leftDiam, rightDiam));
-}
-
-int sum(Node *root)
-{
-    if (root == nullptr)
-        return 0;
-
-    int leftSum = sum(root->left);
-    int rightSum = sum(root->right);
-
-    return leftSum + rightSum + root->data;
-}
-
-bool isIdentical(Node *root1, Node *root2)
-{
-    if (root1 == nullptr && root2 == nullptr)
-    {
-        return true;
-    }
-    else if (root1 == nullptr || root2 == nullptr)
-    {
-        return false;
-    }
-    if (root1->data != root2->data)
-    {
-        return false;
-    }
-
-    return isIdentical(root1->left, root2->left) &&
-           isIdentical(root1->right, root2->right);
-}
-
-bool isSubtree(Node *root, Node *subRoot)
-{
-    if (root == nullptr && subRoot == nullptr)
-    {
-        return true;
-    }
-    else if (root == nullptr || subRoot == nullptr)
-    {
-        return false;
-    }
-    if (root->data == subRoot->data)
-    {
-        if (isIdentical(root, subRoot))
-        {
-            return true;
-        }
-    }
-
-    bool isLeftSubtree = isSubtree(root->left, subRoot);
-    if (!isLeftSubtree)
-    {
-        return isSubtree(root->right, subRoot);
-    }
-
-    return true;
-}
-
-void topView(Node *root)
-{
-    queue<pair<Node *, int>> Q; //(node, HD)
-    map<int, int> m;            //(HD, node->data)
-
-    Q.push(make_pair(root, 0));
-
-    while (!Q.empty())
-    {
-        pair<Node *, int> curr = Q.front();
-        Q.pop();
-        Node *currNode = curr.first;
-        int currHD = curr.second;
-
-        if (m.count(currHD) == 0)
-        { // HD is unique -> add in map
-            m[currHD] = currNode->data;
-        }
-
-        if (currNode->left != nullptr)
-        {
-            pair<Node *, int> left = make_pair(currNode->left, currHD - 1);
-            Q.push(left);
-        }
-
-        if (currNode->right != nullptr)
-        {
-            pair<Node *, int> right = make_pair(currNode->right, currHD + 1);
-            Q.push(right);
-        }
-    }
-
-    for (auto it : m)
-    {
-        cout << it.second << " ";
-    }
-
+    KthHelper(root, k, 1);
     cout << endl;
+}
+
+bool rootToNodePath(Node *root, int n, vector<int> &path)
+{
+    if (root == nullptr)
+    {
+        return false;
+    }
+
+    path.push_back(root->data);
+    if (root->data == n)
+    {
+        return true;
+    }
+
+    bool isLeft = rootToNodePath(root->left, n, path);
+    bool isRight = rootToNodePath(root->right, n, path);
+
+    if (isLeft || isRight)
+    {
+        return true;
+    }
+
+    path.pop_back();
+    return false;
+}
+
+int LCA(Node *root, int n1, int n2)
+{
+    vector<int> path1;
+    vector<int> path2;
+
+    rootToNodePath(root, n1, path1);
+    rootToNodePath(root, n2, path2);
+    int lca = -1;
+    for (int i = 0, j = 0; i < path1.size() && j < path2.size(); i++, j++)
+    {
+        if (path1[i] != path2[j])
+        {
+            return lca;
+        }
+        lca = path1[i];
+    }
+    return lca;
+}
+
+Node *LCA2(Node *root, int n1, int n2)
+{
+    if (root == nullptr)
+    {
+        return nullptr;
+    }
+
+    if (root->data == n1 || root->data == n2)
+    {
+        return root;
+    }
+
+    Node *leftLCA = LCA2(root->left, n1, n2);
+    Node *rightLCA = LCA2(root->right, n1, n2);
+
+    if (leftLCA != nullptr && rightLCA != nullptr)
+    {
+        return root;
+    }
+
+    return leftLCA == nullptr ? rightLCA : leftLCA;
+}
+
+int dist(Node *root, int n)
+{
+    if (root == nullptr)
+    {
+        return -1;
+    }
+
+    if (root->data == n)
+    {
+        return 0;
+    }
+
+    int leftDist = dist(root->left, n);
+    if (leftDist != -1)
+    {
+        return leftDist + 1;
+    }
+
+    int rightDist = dist(root->right, n);
+    if (rightDist != -1)
+    {
+        return rightDist + 1;
+    }
+
+    return -1;
+}
+
+int minDist(Node *root, int n1, int n2)
+{
+    Node *lca = LCA2(root, n1, n2);
+
+    int dist1 = dist(lca, n1);
+    int dist2 = dist(lca, n2);
+
+    return dist1 + dist2;
+}
+
+int KthAncestor(Node *root, int node, int K)
+{
+    if (root == nullptr)
+    {
+        return -1;
+    }
+
+    if (root->data == node)
+    {
+        return 0;
+    }
+
+    int leftDist = KthAncestor(root->left, node, K);
+    int rightDist = KthAncestor(root->right, node, K);
+
+    if (leftDist == -1 && rightDist == -1)
+    {
+        return -1;
+    }
+
+    int validVal = leftDist == -1 ? rightDist : leftDist;
+    if (validVal + 1 == K)
+    {
+        cout << "Kth Ancestor : " << root->data << endl;
+    }
+
+    return validVal + 1;
+}
+
+int transform(Node *root)
+{
+    if (root == nullptr)
+    {
+        return 0;
+    }
+
+    int leftOld = transform(root->left);
+    int rightOld = transform(root->right);
+    int currOld = root->data;
+
+    root->data = leftOld + rightOld;
+
+    if (root->left != nullptr)
+    {
+        root->data += root->left->data;
+    }
+
+    if (root->right != nullptr)
+    {
+        root->data += root->right->data;
+    }
+
+    return currOld;
 }
 
 int main()
@@ -237,6 +252,5 @@ int main()
     vector<int> nodes = {1, 2, 4, -1, -1, 5, -1, -1, 3, -1, 6, -1, -1};
     Node *root = buildTree(nodes);
 
-    topView(root);
     return 0;
 }
